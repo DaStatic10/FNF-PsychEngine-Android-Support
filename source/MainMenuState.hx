@@ -21,34 +21,7 @@ import Achievements;
 import editors.MasterEditorMenu;
 import flixel.input.keyboard.FlxKey;
 
-import haxe.Json;
-#if MODS_ALLOWED
-import sys.FileSystem;
-import sys.io.File;
-#end
-
 using StringTools;
-typedef MainMenuData = 
-{
-storymodeP:Array<Int>,
-	freeplayP:Array<Int>,
-	modsP:Array<Int>,
-	awardsP:Array<Int>,
-	creditsP:Array<Int>,
-	donateP:Array<Int>,
-	optionsP:Array<Int>,
-	storymodeS:Array<Float>,
-	freeplayS:Array<Float>,
-	modsS:Array<Float>,
-	awardsS:Array<Float>,
-	creditsS:Array<Float>,
-	donateS:Array<Float>,
-	optionsS:Array<Float>,
-	menuBGcolor:Array<Int>,
-	menuCBGcolor:Array<Int>,
-	menuColorShift:Bool,
-    centerX:Bool
-}
 
 class MainMenuState extends MusicBeatState
 {
@@ -60,10 +33,9 @@ class MainMenuState extends MusicBeatState
 	private var camAchievement:FlxCamera;
 	
 	var optionShit:Array<String> = [
-		'story_mode',
 		'freeplay',
-		#if MODS_ALLOWED 'mods', #end
-		#if ACHIEVEMENTS_ALLOWED 'awards', #end
+		//#if MODS_ALLOWED 'mods', #end
+		//#if ACHIEVEMENTS_ALLOWED 'awards', #end
 		'credits',
 		#if !switch 'donate', #end
 		'options'
@@ -73,8 +45,8 @@ class MainMenuState extends MusicBeatState
 	var camFollow:FlxObject;
 	var camFollowPos:FlxObject;
 	var debugKeys:Array<FlxKey>;
-
-  var mainMenuJSON:MainMenuData;
+	
+	var char:FlxSprite;
 
 	override function create()
 	{
@@ -85,8 +57,6 @@ class MainMenuState extends MusicBeatState
 		DiscordClient.changePresence("In the Menus", null);
 		#end
 		debugKeys = ClientPrefs.copyKey(ClientPrefs.keyBinds.get('debug_1'));
-
-        mainMenuJSON = Json.parse(Paths.getTextFromFile('images/mainMenuLayout.json')); 
 
 		camGame = new FlxCamera();
 		camAchievement = new FlxCamera();
@@ -130,7 +100,7 @@ class MainMenuState extends MusicBeatState
 		menuItems = new FlxTypedGroup<FlxSprite>();
 		add(menuItems);
 
-		//var scale:Float = 1;
+		var scale:Float = 1;
 		/*if(optionShit.length > 6) {
 			scale = 6 / optionShit.length;
 		}*/
@@ -138,7 +108,7 @@ class MainMenuState extends MusicBeatState
 		for (i in 0...optionShit.length)
 		{
 			var offset:Float = 108 - (Math.max(optionShit.length, 4) - 4) * 80;
-			var menuItem:FlxSprite = new FlxSprite(0, (i * 140)  + offset);
+			var menuItem:FlxSprite = new FlxSprite(100, (i * 140)  + offset);
 			menuItem.scale.x = scale;
 			menuItem.scale.y = scale;
 			menuItem.frames = Paths.getSparrowAtlas('mainmenu/menu_' + optionShit[i]);
@@ -146,9 +116,6 @@ class MainMenuState extends MusicBeatState
 			menuItem.animation.addByPrefix('selected', optionShit[i] + " white", 24);
 			menuItem.animation.play('idle');
 			menuItem.ID = i;
-			if(mainMenuJSON.centerX == true){
-			menuItem.screenCenter(X); 
-			}
 			//menuItem.screenCenter(X);
 			menuItems.add(menuItem);
 			var scr:Float = (optionShit.length - 4) * 0.135;
@@ -192,9 +159,19 @@ class MainMenuState extends MusicBeatState
                 #end
 
 		super.create();
-	}
+	{
+	case 1:
+	char = new FlxSprite(820, 170).loadGraphic(Paths.image('character/BOYFRIEND'));//put your cords and image here
+			char.frames = Paths.getSparrowAtlas('mainmenu/hellron');//here put the name of the xml
+			char.animation.addByPrefix('idleR', 'idle normal', 24, true);//on 'idle normal' change it to your xml one
+			char.animation.play('idleR');//you can rename the anim however you want to
+			char.scrollFactor.set();
+			FlxG.sound.play(Paths.sound('appear'), 2);
+			char.flipX = true;//this is for flipping it to look left instead of right you can make it however you want
+			char.antialiasing = ClientPrefs.globalAntialiasing;
+			add(char);
 
-	#if ACHIEVEMENTS_ALLOWED
+	//#if ACHIEVEMENTS_ALLOWED
 	// Unlocks "Freaky on a Friday Night" achievement
 	function giveAchievement() {
 		add(new AchievementObject('friday_night_play', camAchievement));
@@ -300,7 +277,7 @@ class MainMenuState extends MusicBeatState
 
 		menuItems.forEach(function(spr:FlxSprite)
 		{
-			spr.screenCenter(X);
+			//spr.screenCenter(X);
 		});
 	}
 
